@@ -5,4 +5,6 @@ bin/
 terraform/terraform.auto.tfvars
 .terraform/
 .terraform.*
+terraform.tfstate*
 terraform.tfstate
+*.plan
