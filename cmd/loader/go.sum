@@ -1,6 +1,10 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/ahctim/alarmdash v0.0.0-20210703185649-85438cc2340f h1:VZWftKTUuyaUWJlNd8guXO7/fW4Wh1VkxLub1zIRuAM=
 github.com/ahctim/alarmdash v0.0.0-20210703185649-85438cc2340f/go.mod h1:XII71Px0I5z4KBH2NRoFcqpmhVEfDrQkBKOiHWoCqHo=
+github.com/ahctim/alarmdash v0.1.1-0.20210704134240-d07eb66d011c h1:RbL6JWV7/zXLWsfOCK/Yaa/pGodsN/uOMNU6Jr5fYlE=
+github.com/ahctim/alarmdash v0.1.1-0.20210704134240-d07eb66d011c/go.mod h1:XII71Px0I5z4KBH2NRoFcqpmhVEfDrQkBKOiHWoCqHo=
+github.com/ahctim/alarmdash v0.1.1-0.20210704141523-8be921dd06b9 h1:VBvpFv7cQAumclnCFQ1bM7QzO441QBG8clf+Fp0Lg2M=
+github.com/ahctim/alarmdash v0.1.1-0.20210704141523-8be921dd06b9/go.mod h1:XII71Px0I5z4KBH2NRoFcqpmhVEfDrQkBKOiHWoCqHo=
 github.com/aws/aws-lambda-go v1.24.0 h1:bOMerM175hLqHLdF1Nonfv1NA20nTIatuC0HK8eMoYg=
 github.com/aws/aws-lambda-go v1.24.0/go.mod h1:jJmlefzPfGnckuHdXX7/80O3BvUUi12XOkbv4w9SGLU=
 github.com/aws/aws-sdk-go-v2 v1.7.0 h1:UYGnoIPIzed+ycmgw8Snb/0HK+KlMD+SndLTneG8ncE=

@@ -1,7 +1,9 @@
 ## Active Table
 
-Hash key: alarm_name (S) -> The alarm name. Alarm names must be unique
+Partition key: alarm_source (S) -> The source of the alarm
 
-| description  |  alarm_reason | alarm_name   |  region | alarm_state |
+Sort key: alarm_name (S) -> The alarm name. Alarm names must be unique
+
+| alarm_source | description  |  alarm_reason | alarm_name   |  region | alarm_state |
 |---|---|---|---|---|
-| s  |  s | int  | s | s |
+| s | s |  s | int  | s | s |

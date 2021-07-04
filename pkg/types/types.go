@@ -5,7 +5,7 @@ package types
 // Ideally we'd use something provided by the SDK
 type AlarmEvent struct {
 	AlarmName        string `json:"AlarmName"`
-	AlarmSource      string `json:"AlarmSource"`
+	AlarmSource      string `json:"AlarmSource"`      // AlarmSource can be set by anything
 	AlarmDescription string `json:"AlarmDescription"` // This may be null
 	Region           string `json:"Region"`
 	NewStateValue    string `json:"NewStateValue"`

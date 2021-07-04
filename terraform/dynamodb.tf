@@ -1,8 +1,13 @@
 resource "aws_dynamodb_table" "table" {
   name         = var.alarms_table_name
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "alarm_name"
+  hash_key     = "alarm_source"
+  range_key    = "alarm_name"
 
+  attribute {
+    name = "alarm_source"
+    type = "S"
+  }
   attribute {
     name = "alarm_name"
     type = "S"

@@ -68,6 +68,7 @@ data "aws_iam_policy_document" "api_gw" {
     effect = "Allow"
     actions = [
       "dynamodb:DeleteItem",
+      "dynamodb:PutItem",
       "dynamodb:Scan"
     ]
     resources = [
