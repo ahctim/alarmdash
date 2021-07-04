@@ -26,11 +26,11 @@ jobs:
 
     - name: Vet
       run: go vet -race ./
-      working-directory: scripts
+      working-directory: cmd/loader
 
     - name: Unit tests
       run: go test -v ./
-      working-directory: scripts
+      working-directory: cmd/loader
 
     - name: Build
       run: bash scripts/build/loader/lambda.sh
