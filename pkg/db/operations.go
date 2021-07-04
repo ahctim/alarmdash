@@ -24,6 +24,9 @@ type DynamoBucket struct {
 func (b DynamoBucket) Put(ctx context.Context, a types.AlarmEvent) error {
 
 	i := map[string]ddbtypes.AttributeValue{
+		"alarm_source": &ddbtypes.AttributeValueMemberS{
+			Value: a.AlarmSource,
+		},
 		"alarm_name": &ddbtypes.AttributeValueMemberS{
 			Value: a.AlarmName,
 		},
@@ -59,9 +62,12 @@ func (b DynamoBucket) Put(ctx context.Context, a types.AlarmEvent) error {
 
 }
 
-func (b DynamoBucket) Remove(ctx context.Context, name string) error {
+func (b DynamoBucket) Remove(ctx context.Context, source string, name string) error {
 
 	key := map[string]ddbtypes.AttributeValue{
+		"alarm_source": &ddbtypes.AttributeValueMemberS{
+			Value: source,
+		},
 		"alarm_name": &ddbtypes.AttributeValueMemberS{
 			Value: name,
 		},
