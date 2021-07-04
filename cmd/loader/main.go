@@ -23,6 +23,7 @@ func determineSource(a types.AlarmEvent) string {
 
 	// Cloudwatch will include the account ID in the message
 	if awsAccountID := a.AWSAccountId; awsAccountID != "" {
+		fmt.Println("Found AWS account ID. Assuming this alarm is from Cloudwatch")
 		return "CLOUDWATCH"
 	}
 
@@ -35,7 +36,6 @@ func transformEvent(event events.SNSEvent) ([]types.AlarmEvent, error) {
 	for _, e := range event.Records {
 		var alarm types.AlarmEvent
 		alarm.ID = e.SNS.MessageID
-		alarm.Created = time.Now().String()
 
 		m := e.SNS.Message
 
@@ -72,6 +72,7 @@ func handler(ctx context.Context, e events.SNSEvent) error {
 
 	for _, ev := range eventArray {
 		if ev.NewStateValue == "ALARM" {
+			ev.Created = time.Now().String()
 			err = ddbBucket.Put(context.Background(), ev)
 
 			if err != nil {
