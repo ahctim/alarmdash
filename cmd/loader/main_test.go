@@ -47,9 +47,11 @@ func Test_transformEvent(t *testing.T) {
 			want: []types.AlarmEvent{
 				{
 					AlarmName:      "loader-test",
+					AlarmSource:    "CLOUDWATCH",
 					Region:         "US West (Oregon)",
 					NewStateValue:  "OK",
 					NewStateReason: "Threshold Crossed",
+					AWSAccountId:   "111111111111",
 				},
 			},
 			wantErr: false,
