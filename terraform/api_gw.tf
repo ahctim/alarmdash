@@ -8,6 +8,12 @@ resource "aws_api_gateway_resource" "alarms" {
   rest_api_id = aws_api_gateway_rest_api.gw.id
 }
 
+resource "aws_api_gateway_resource" "bugsnag" {
+  parent_id   = aws_api_gateway_resource.alarms.id
+  path_part   = "bugsnag"
+  rest_api_id = aws_api_gateway_rest_api.gw.id
+}
+
 resource "aws_api_gateway_method" "get_alarms" {
   authorization    = "NONE"
   http_method      = "GET"
@@ -22,6 +28,14 @@ resource "aws_api_gateway_method" "delete_alarm" {
   resource_id      = aws_api_gateway_resource.alarms.id
   rest_api_id      = aws_api_gateway_rest_api.gw.id
   api_key_required = true
+}
+
+resource "aws_api_gateway_method" "bugsnag" {
+  authorization    = "NONE"
+  http_method      = "POST"
+  resource_id      = aws_api_gateway_resource.bugsnag.id
+  rest_api_id      = aws_api_gateway_rest_api.gw.id
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "ddb_scan" {
@@ -47,7 +61,7 @@ resource "aws_api_gateway_integration" "ddb_delete" {
   http_method             = aws_api_gateway_method.delete_alarm.http_method
   resource_id             = aws_api_gateway_resource.alarms.id
   rest_api_id             = aws_api_gateway_rest_api.gw.id
-  credentials             = aws_iam_role.api_gw.arn // TODO
+  credentials             = aws_iam_role.api_gw.arn
   type                    = "AWS"
   uri                     = "arn:aws:apigateway:${var.region}:dynamodb:action/DeleteItem"
   integration_http_method = "POST"
@@ -58,9 +72,52 @@ resource "aws_api_gateway_integration" "ddb_delete" {
 {
     "TableName": "${var.alarms_table_name}",
     "Key": {
+      "alarm_source": {
+          "S": $input.json('$.alarm_source')
+        },
         "alarm_name": {
             "S": $input.json('$.alarm_name')
-            }
+        }
+    }
+}
+EOF
+  }
+}
+
+// Bugsnag webhook docs: https://docs.bugsnag.com/product/integrations/data-forwarding/webhook/
+resource "aws_api_gateway_integration" "bugsnag_add" {
+  http_method             = aws_api_gateway_method.bugsnag.http_method
+  resource_id             = aws_api_gateway_resource.bugsnag.id
+  rest_api_id             = aws_api_gateway_rest_api.gw.id
+  credentials             = aws_iam_role.api_gw.arn
+  type                    = "AWS"
+  uri                     = "arn:aws:apigateway:${var.region}:dynamodb:action/PutItem"
+  integration_http_method = "POST"
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
+
+  request_templates = {
+    "application/json" = <<EOF
+{
+    "TableName": "${var.alarms_table_name}",
+    "Key": {
+      "alarm_source": {
+          "S": BUGSNAG
+        },
+        "alarm_name": {
+            "S": $input.json('$.error.message')
+        },
+        "description": {
+          "S": $input.json('$.error.exceptionClass')
+        },
+        "alarm_state": {
+          "S": $input.json('$.error.status')
+        },
+        "alarm_reason": {
+          "S": $input.json('$.trigger.message')
+        },
+        "created": {
+          "S": $input.json('$.error.receivedAt')
+        },
     }
 }
 EOF
@@ -86,6 +143,7 @@ resource "aws_api_gateway_integration_response" "get_alarms" {
 {
     "alarms": [
         #foreach($elem in $inputRoot.Items) {
+            "alarm_source": "$elem.alarm_source.S",
             "alarm_name": "$elem.alarm_name.S",
             "alarm_created": "$elem.created.S",
             "alarm_description": "$elem.description.S",
@@ -112,6 +170,30 @@ EOF
   }
 }
 
+resource "aws_api_gateway_method_response" "bugsnag_response_200" {
+  rest_api_id = aws_api_gateway_rest_api.gw.id
+  resource_id = aws_api_gateway_resource.bugsnag.id
+  http_method = aws_api_gateway_method.bugsnag.http_method
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "bugsnag" {
+  rest_api_id = aws_api_gateway_rest_api.gw.id
+  resource_id = aws_api_gateway_resource.bugsnag.id
+  http_method = aws_api_gateway_method.bugsnag.http_method
+  status_code = aws_api_gateway_method_response.bugsnag_response_200.status_code
+
+  response_templates = {
+    "application/json" = <<EOF
+{"ok": "yes"}
+EOF
+  }
+
+  depends_on = [
+    aws_api_gateway_method_response.bugsnag_response_200
+  ]
+}
+
 resource "aws_api_gateway_method_response" "response_200_delete" {
   rest_api_id = aws_api_gateway_rest_api.gw.id
   resource_id = aws_api_gateway_resource.alarms.id
@@ -127,7 +209,8 @@ resource "aws_api_gateway_deployment" "live" {
       aws_api_gateway_resource.alarms.id,
       aws_api_gateway_method.get_alarms.id,
       aws_api_gateway_integration.ddb_scan.id,
-      aws_api_gateway_integration.ddb_delete.id
+      aws_api_gateway_integration.ddb_delete.id,
+      aws_api_gateway_integration.bugsnag_add.id
     ]))
   }
 

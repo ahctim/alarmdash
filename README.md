@@ -32,7 +32,7 @@ alarmdash uses AWS API Gateway to expose alarms for visualization. If you use th
 
 Deleting an alarm:
 ```
-curl -H "content-type: application/json" -H "x-api-key: KEY" -X DELETE -d '{"alarm_name": "alarm-name"}'   https://foo.execute-api.us-west-2.amazonaws.com/live/alarms
+curl -H "content-type: application/json" -H "x-api-key: KEY" -X DELETE -d '{"alarm_name": "alarm-name", "alarm_source": "CLOUDWATCH"}' https://foo.execute-api.us-west-2.amazonaws.com/live/alarms
 ```
 
 Retrieving all alarms:
@@ -43,4 +43,6 @@ curl -H "x-api-key: KEY" https://foo.execute-api.us-west-2.amazonaws.com/live/al
 
 ## External Alarms
 
-In theory, you can ingest alarms from sources outside of Cloudwatch. As long as the SNS message satisfies the `AlarmEvent` struct, `loader` can add the event to DynamoDB. Alternatively, you could skip `loader` all together and have another process write to Dynamo.
+There's no reason you can't ingest alarms from sources outside of Cloudwatch. As long as the SNS message satisfies the `AlarmEvent` struct, `loader` can add the event to DynamoDB. Alternatively, you could skip `loader` all together and have another process write to Dynamo.
+
+The easiest solution is to add an API resource, method, integration request, integration response, and method response. The `bugsnag` API Gateway resources in `terraform/api_gw.tf` have not been tested but should provide a decent reference point. 

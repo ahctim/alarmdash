@@ -14,6 +14,21 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
+func determineSource(a types.AlarmEvent) string {
+	// This logic handles cases where a non-Cloudwatch-generated message invokes this function
+	if a.AlarmSource != "" {
+		fmt.Println("AlarmSource was provided in SNS message. Setting AlarmSource to", a.AlarmSource)
+		return a.AlarmSource
+	}
+
+	// Cloudwatch will include the account ID in the message
+	if awsAccountID := a.AWSAccountId; awsAccountID != "" {
+		return "CLOUDWATCH"
+	}
+
+	return "UNKNOWN"
+}
+
 func transformEvent(event events.SNSEvent) ([]types.AlarmEvent, error) {
 	var rv []types.AlarmEvent
 
@@ -30,6 +45,8 @@ func transformEvent(event events.SNSEvent) ([]types.AlarmEvent, error) {
 			fmt.Println("Error unmarshalling e.SNS.Message into types.AlarmEvent", err.Error())
 			return rv, err
 		}
+
+		alarm.AlarmSource = determineSource(alarm)
 
 		rv = append(rv, alarm)
 	}
@@ -63,7 +80,7 @@ func handler(ctx context.Context, e events.SNSEvent) error {
 
 			fmt.Println("Successfully added record for alarm", ev.ID)
 		} else {
-			err = ddbBucket.Remove(context.Background(), ev.AlarmName)
+			err = ddbBucket.Remove(context.Background(), ev.AlarmSource, ev.AlarmName)
 
 			if err != nil {
 				return err

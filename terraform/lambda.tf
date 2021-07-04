@@ -1,3 +1,4 @@
+
 resource "null_resource" "lambda_zip" {
   triggers = {
     on_version_change = var.loader_zip_url
@@ -17,6 +18,7 @@ resource "aws_lambda_function" "loader" {
   handler       = "loader"
   timeout       = 5
   role          = aws_iam_role.loader.arn
+  reserved_concurrent_executions = var.lambda_reserved_concurrent_executions
 
   environment {
     variables = {
@@ -29,4 +31,11 @@ resource "aws_lambda_function" "loader" {
   depends_on = [
     null_resource.lambda_zip
   ]
+  
+}
+
+resource "aws_lambda_function_event_invoke_config" "loader" {
+  function_name                = aws_lambda_function.loader.function_name
+  maximum_event_age_in_seconds = 300
+  maximum_retry_attempts       = 1 // In the event of a DDB error
 }

@@ -49,5 +49,10 @@ variable "sns_topic_kms_key_id" {
 
 variable "loader_zip_url" {
   type    = string
-  default = "https://github.com/ahctim/alarmdash/releases/download/v0.1.0/loader.zip"
+  default = "https://github.com/ahctim/alarmdash/releases/download/v0.2.0/loader.zip"
+}
+
+variable "lambda_reserved_concurrent_executions" {
+  type = number
+  default = -1
 }
